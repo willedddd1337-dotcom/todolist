@@ -280,8 +280,11 @@
 
     .todo-body {
       flex: 1;
-      padding: 20px 18px;
+      padding: 16px 18px;
       border-bottom: 1px solid var(--border2);
+      display: flex;
+      align-items: center;
+      gap: 12px;
       transition: border-color .3s;
     }
 
@@ -293,7 +296,55 @@
       letter-spacing: -.015em;
       line-height: 1.45;
       word-break: break-word;
-      transition: color .15s;
+      transition: color .15s, opacity .2s, text-decoration .2s;
+    }
+
+    .todo-text.done {
+      text-decoration: line-through;
+      opacity: 0.35;
+    }
+
+    /* Custom checkbox */
+    .check-form {
+      display: flex;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .check-form input[type="checkbox"] {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 6px;
+      border: 1.5px solid var(--border);
+      background: transparent;
+      cursor: pointer;
+      position: relative;
+      transition: border-color .2s, background .2s;
+      flex-shrink: 0;
+    }
+
+    .check-form input[type="checkbox"]:hover {
+      border-color: var(--accent);
+    }
+
+    .check-form input[type="checkbox"]:checked {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .check-form input[type="checkbox"]:checked::after {
+      content: '';
+      position: absolute;
+      left: 5px;
+      top: 2px;
+      width: 6px;
+      height: 10px;
+      border: 2px solid #fff;
+      border-top: none;
+      border-left: none;
+      transform: rotate(45deg);
     }
 
     .del-btn {
@@ -378,20 +429,25 @@
       </button>
     </form>
 
-    {% if text %}
+    {% if tasks %}
     <div class="section-head">
       <div class="section-line"></div>
-      <span class="section-txt">Завдання · {{ text|length }}</span>
+      <span class="section-txt">Завдання · {{ tasks|length }}</span>
       <div class="section-line"></div>
     </div>
     <div class="todo-list">
-      {% for todo in text %}
+      {% for todo in tasks %}
       <div class="todo-item">
         <span class="todo-num">{{ '%02d' % loop.index }}</span>
         <div class="todo-body">
-          <span class="todo-text">{{ todo }}</span>
+          <form class="check-form" method="post" action="/complete/{{ todo.id }}">
+            <input type="checkbox"
+                   {% if todo.completed %}checked{% endif %}
+                   onchange="this.form.submit()">
+          </form>
+          <span class="todo-text {% if todo.completed %}done{% endif %}">{{ todo.title }}</span>
         </div>
-        <a href="/delete/{{ loop.index0 }}" class="del-btn" title="Видалити">
+        <a href="/delete/{{ todo.id }}" class="del-btn" title="Видалити">
           <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
             <path d="M1 1l10 10M11 1L1 11" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
           </svg>
@@ -401,7 +457,7 @@
     </div>
     {% endif %}
 
-    {% if not text %}
+    {% if not tasks %}
     <div class="empty">
       <div class="empty-ring">
         <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
